@@ -90,7 +90,15 @@ def staro_barvanje():
                 cv.rectangle(frame, (j, i), (j + x, i + y), (0, 0, 255), 1)
 
 def odstrani_osamelce(skatle):
-
+    removed = 0
+    for i in range(0, len(skatle) - 1):
+         for j in range(0, len(skatle[0]) -1):
+            if skatle[i][j] == 1:
+                if(skatle[i + 1][j] != 1 and skatle[i][j+1] != 1 and skatle[i - 1][j] != 1
+                and skatle[i][j -1] != 1):
+                    skatle[i][j] = 0
+                    removed +=1
+    #print(removed)
     return skatle
 
 def izrisi_skatle(slika, skatle, sirina_skatle, visina_skatle):
