@@ -89,17 +89,7 @@ def staro_barvanje():
             else:
                 cv.rectangle(frame, (j, i), (j + x, i + y), (0, 0, 255), 1)
 
-def odstrani_osamelce(skatle):
-    removed = 0
-    for i in range(0, len(skatle) - 1):
-         for j in range(0, len(skatle[0]) -1):
-            if skatle[i][j] == 1:
-                if(skatle[i + 1][j] != 1 and skatle[i][j+1] != 1 and skatle[i - 1][j] != 1
-                and skatle[i][j -1] != 1):
-                    skatle[i][j] = 0
-                    removed +=1
-    print(removed)
-    return skatle
+
 
 def izrisi_skatle(slika, skatle, sirina_skatle, visina_skatle):
     for i in range(0, len(skatle)):
@@ -115,7 +105,7 @@ if __name__ == '__main__':
     # Pripravi kamero
     camy = 220
     camx = 340
-    odstrani = False
+    odstrani = True
     x = 20
     y = 20
     tolerance = 40
@@ -137,8 +127,8 @@ if __name__ == '__main__':
                 num += 1
             else:
                 skatle = obdelaj_sliko_s_skatlami(frame, x, y, skin)
-                if odstrani:
-                    skatle = odstrani_osamelce(skatle)
+                #if odstrani:
+                    #skatle = odstrani_osamelce(skatle)
                 frame = izrisi_skatle(frame, skatle, x, y)
                 #cv.imshow('frame2', frame2)
             cv.imshow('frame', frame)
