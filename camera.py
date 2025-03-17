@@ -5,7 +5,6 @@ import numpy as np
 def zmanjsaj_sliko(slika, sirina, visina):
     return cv.resize(slika, (sirina, visina))
 
-
 def obdelaj_sliko_s_skatlami(slika, sirina_skatle, visina_skatle, barva_koze) -> list:
     '''Sprehodi se skozi sliko v velikosti škatle (sirina_skatle x visina_skatle) in izračunaj število pikslov kože v vsaki škatli.
     Škatle se ne smejo prekrivati!
@@ -13,7 +12,9 @@ def obdelaj_sliko_s_skatlami(slika, sirina_skatle, visina_skatle, barva_koze) ->
     Primer: Če je v sliki 25 škatel, kjer je v vsaki vrstici 5 škatel, naj bo seznam oblike
       [[1,0,0,1,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,1]].
       V tem primeru je v prvi škatli 1 piksel kože, v drugi 0, v tretji 0, v četrti 1 in v peti 1.'''
+    tabela = []
     for i in range(0, camy, visina_skatle):
+        vrstica = []
         for j in range(0, camx, sirina_skatle):
             tempx = sirina_skatle
             tempy = visina_skatle
@@ -22,11 +23,14 @@ def obdelaj_sliko_s_skatlami(slika, sirina_skatle, visina_skatle, barva_koze) ->
             if (i + y > camy):
                 tempy = camy - i
             if prestej_piklse_z_barvo_koze(slika[i:i + tempy, j:j + tempx], barva_koze) > sirina_skatle * visina_skatle/ 2:
-                cv.rectangle(frame, (j, i), (j + tempx, i + tempy), (0, 255, 0), 3)
+                vrstica.append(1)
+                #cv.rectangle(frame2, (j, i), (j + tempx, i + tempy), (0, 255, 0), 3)
             else:
-                cv.rectangle(frame, (j, i), (j + tempx, i + tempy), (0, 0, 255), 1)
+                vrstica.append(0)
+                #cv.rectangle(frame2, (j, i), (j + tempx, i + tempy), (0, 0, 255), 1)
+        tabela.append(vrstica)
+    return tabela
     pass
-
 
 def prestej_piklse_z_barvo_koze(slika, barva_koze) -> int:
     '''Prestej število pikslov z barvo kože v škatli.'''
@@ -85,13 +89,36 @@ def staro_barvanje():
             else:
                 cv.rectangle(frame, (j, i), (j + x, i + y), (0, 0, 255), 1)
 
+def odstrani_osamelce(skatle):
+    removed = 0
+    for i in range(0, len(skatle) - 1):
+         for j in range(0, len(skatle[0]) -1):
+            if skatle[i][j] == 1:
+                if(skatle[i + 1][j] != 1 and skatle[i][j+1] != 1 and skatle[i - 1][j] != 1
+                and skatle[i][j -1] != 1):
+                    skatle[i][j] = 0
+                    removed +=1
+    print(removed)
+    return skatle
+
+def izrisi_skatle(slika, skatle, sirina_skatle, visina_skatle):
+    for i in range(0, len(skatle)):
+        for j in range(0, len(skatle[i])):
+            if skatle[i][j] == 1:
+                cv.rectangle(slika, (j*sirina_skatle, i*visina_skatle), ((j+1) * sirina_skatle, (i + 1) * visina_skatle), (0, 255, 0), 3)
+            else:
+                cv.rectangle(slika, (j * sirina_skatle, i * visina_skatle),((j + 1) * sirina_skatle, (i + 1) * visina_skatle), (0, 0, 255), 1)
+
+    return slika
+
 if __name__ == '__main__':
     # Pripravi kamero
     camy = 220
     camx = 340
+    odstrani = False
     x = 20
     y = 20
-    tolerance = 50
+    tolerance = 40
     skin = 0
     camera = cv.VideoCapture(0)
     ret, frame = camera.read()
@@ -109,10 +136,22 @@ if __name__ == '__main__':
                 print(skin)
                 num += 1
             else:
-                obdelaj_sliko_s_skatlami(frame, x, y, skin)
+                skatle = obdelaj_sliko_s_skatlami(frame, x, y, skin)
+                if odstrani:
+                    skatle = odstrani_osamelce(skatle)
+                frame = izrisi_skatle(frame, skatle, x, y)
+                #cv.imshow('frame2', frame2)
             cv.imshow('frame', frame)
         if(cv.waitKey(1) & 0xFF == ord('q')):
             break
+        if(cv.waitKey(1) & 0xFF == ord('x')):
+            if odstrani:
+                print("brez odstranjevanja")
+                odstrani = False
+            else:
+                print("z odstranjevanjem")
+                odstrani = True
+
     camera.release()
     cv.destroyAllWindows()
 
