@@ -143,7 +143,8 @@ if __name__ == '__main__':
                 frame = izrisi_skatle(frame, skatle, x, y)
                 fps = num / (time.time() - start_time)
                 start_time = time.time()
-
+                cv.putText(frame, f"FPS: {fps:.0f}", (180, 200), cv.FONT_HERSHEY_SIMPLEX, 0.8,
+                           (255, 120, 0), 2, cv.LINE_AA)
                 num = 0
                 #cv.imshow
             num += 1
