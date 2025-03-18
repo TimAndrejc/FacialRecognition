@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-
+import time
 
 def zmanjsaj_sliko(slika, sirina, visina):
     return cv.resize(slika, (sirina, visina))
@@ -116,31 +116,37 @@ if __name__ == '__main__':
     camy = 220
     camx = 340
     odstrani = True
-    x = 20
-    y = 20
+    x = 4
+    y = 4
     tolerance = 40
+    start_time = time.time()
     skin = 0
     camera = cv.VideoCapture(0)
     ret, frame = camera.read()
     num = 0
+    complete = True
     while True:
         ret, frame = camera.read()
         if ret:
             frame = cv.flip(frame, 1)
             frame = zmanjsaj_sliko(frame, camx, camy)
-            if num < 40:
+            if num < 40 and complete:
                 frame = cv.rectangle(frame, [140, 50], [210,150], (255, 0, 0), 3)
-                num += 1
-            elif num == 40:
+            elif num == 40 and complete:
                 skin = doloci_barvo_koze(frame, [140, 50], [210, 150])
                 print(skin)
-                num += 1
+                complete = False
             else:
                 skatle = obdelaj_sliko_s_skatlami(frame, x, y, skin)
                 if odstrani:
                     skatle = odstrani_osamelce(skatle)
                 frame = izrisi_skatle(frame, skatle, x, y)
-                #cv.imshow('frame2', frame2)
+                fps = num / (time.time() - start_time)
+                start_time = time.time()
+
+                num = 0
+                #cv.imshow
+            num += 1
             cv.imshow('frame', frame)
         if(cv.waitKey(1) & 0xFF == ord('q')):
             break
